@@ -1,21 +1,22 @@
-﻿using System;
+﻿using BepInEx;
+using HarmonyLib;
+using System;
 using System.Collections;
-using Modding;
 using System.Collections.Generic;
-using Satchel.BetterMenus;
 using UnityEngine;
 using Random = UnityEngine.Random;
 using UObject = UnityEngine.Object;
 
 namespace HueShifter
 {
-    public class HueShifter : Mod, ICustomMenuMod, ITogglableMod, IGlobalSettings<HueShifterSettings>
+    [BepInAutoPlugin(id: "io.github.dpinela.hueshifter")]
+    [BepInDependency("org.silksong-modding.datamanager")]
+    public partial class HueShifterPlugin : BaseUnityPlugin
     {
-        public static HueShifter Instance;
+        public static HueShifterPlugin Instance;
         public HueShifterSettings GS { get; private set; } = new();
-        public override string GetVersion() => GetType().Assembly.GetName().Version.ToString();
 
-        private Menu menuRef;
+        //private Menu menuRef;
 
         public Shader RainbowDefault;
         public Shader RainbowScreenBlend;
@@ -47,7 +48,7 @@ namespace HueShifter
             };
 
             var assetBundle = AssetBundle.LoadFromStream(
-                typeof(HueShifter).Assembly.GetManifestResourceStream(
+                typeof(HueShifterPlugin).Assembly.GetManifestResourceStream(
                     $"HueShifter.Resources.AssetBundles.hueshiftshaders-{platform}"));
             // foreach (var name in assetBundle.GetAllAssetNames()) Log($"assetBundle contains {name}");
 
@@ -60,34 +61,25 @@ namespace HueShifter
             RainbowGrassLit = assetBundle.LoadAsset<Shader>("assets/shader/rainbowgrasslit.shader");
         }
 
-        public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
+        public void Start()
         {
-            Log("Initializing");
             Instance = this;
             if (RainbowDefault is null) LoadAssets();
-            On.GameManager.OnNextLevelReady += OnNextLevelReady;
-            LightingHandler.Hook();
-            HeroLightHandler.Hook();
+            new Harmony(Id).PatchAll();
         }
 
-        public void Unload()
+        [HarmonyPatch(typeof(GameManager), nameof(GameManager.OnNextLevelReady))]
+        private static class NextLevelPatch
         {
-            On.GameManager.OnNextLevelReady -= OnNextLevelReady;
-            LightingHandler.Unhook();
-            HeroLightHandler.Unhook();
-            foreach (var renderer in GameCameras.instance.sceneParticles.GetComponentsInChildren<Renderer>(true))
-                SetShader(renderer, 0, Vector4.zero);
-        }
-        
-        private void OnNextLevelReady(On.GameManager.orig_OnNextLevelReady orig, GameManager self)
-        {
-            orig(self);
-            IEnumerator DelayedShaderSet()
+            private static void Postfix(GameManager __instance)
             {
-                yield return null; // wait a frame
-                SetAllTheShaders();
+                IEnumerator DelayedShaderSet()
+                {
+                    yield return null; // wait a frame
+                    HueShifterPlugin.Instance.SetAllTheShaders();
+                }
+                __instance.StartCoroutine(DelayedShaderSet());
             }
-            GameManager.instance.StartCoroutine(DelayedShaderSet());
         }
 
         public float GetPhase()
@@ -198,7 +190,7 @@ namespace HueShifter
             renderer.SetPropertyBlock(materialPropertyBlock);
         }
 
-        public MenuScreen GetMenuScreen(MenuScreen modListMenu, ModToggleDelegates? toggleDelegates)
+        /*public MenuScreen GetMenuScreen(MenuScreen modListMenu, ModToggleDelegates? toggleDelegates)
         {
             menuRef ??= new Menu("HueShifter", new Element[]
             {
@@ -265,7 +257,7 @@ namespace HueShifter
             menuRef.Find("AllowVanillaOption").isVisible = GS.RandomPhase != RandomPhaseSetting.Fixed;
             menuRef.Find("ReRollButton").isVisible = GS.RandomPhase != RandomPhaseSetting.Fixed;
             menuRef.Update();
-        }
+        }*/
 
         public bool ToggleButtonInsideMenu => true;
     }
