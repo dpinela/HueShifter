@@ -11,6 +11,7 @@ namespace HueShifter
     
     public class HueShifterSettings
     {
+        public bool ModEnabled = true;
         public float Phase = 0;
         public RandomPhaseSetting RandomPhase = RandomPhaseSetting.RandomPerMapArea;
         public bool ShiftLighting = true;

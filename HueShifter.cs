@@ -1,5 +1,9 @@
 ﻿using BepInEx;
 using HarmonyLib;
+using Silksong.ModMenu.Plugin;
+using Silksong.ModMenu.Screens;
+using Silksong.ModMenu.Elements;
+using Silksong.ModMenu.Models;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,9 +13,9 @@ using UObject = UnityEngine.Object;
 
 namespace HueShifter
 {
-    [BepInAutoPlugin(id: "io.github.dpinela.hueshifter")]
+    [BepInAutoPlugin(id: "io.github.dpinela.hueshifter", "HueShifter")]
     [BepInDependency("org.silksong-modding.datamanager")]
-    public partial class HueShifterPlugin : BaseUnityPlugin
+    public partial class HueShifterPlugin : BaseUnityPlugin, IModMenuCustomMenu
     {
         public static HueShifterPlugin Instance;
         public HueShifterSettings GS { get; private set; } = new();
@@ -188,6 +192,36 @@ namespace HueShifter
             materialPropertyBlock.SetFloat(PhaseProperty, phase);
             materialPropertyBlock.SetVector(FrequencyProperty, frequencyVector);
             renderer.SetPropertyBlock(materialPropertyBlock);
+        }
+
+        private const string MenuName = "HueShifter";
+
+        public string ModMenuName() => MenuName;
+
+        public AbstractMenuScreen BuildCustomMenu()
+        {
+            var pagedMenu = new PaginatedMenuScreen(MenuName);
+            var mainPage = new VerticalGroup();
+            {
+                var model = ChoiceModels.ForBool("Off", "On");
+                model.OnValueChanged += (on) =>
+                {
+                    GS.ModEnabled = on;
+                };
+                model.SetValue(GS.ModEnabled);
+                mainPage.Add(new ChoiceElement<bool>("Mod Enabled", model));
+            }
+            {
+                var model = ChoiceModels.ForEnum<RandomPhaseSetting>();
+                model.OnValueChanged += (ps) =>
+                {
+                    GS.RandomPhase = ps;
+                };
+                model.SetValue(GS.RandomPhase);
+                mainPage.Add(new ChoiceElement<RandomPhaseSetting>("Randomize Hues", model));
+            }
+            pagedMenu.AddPage(mainPage);
+            return pagedMenu;
         }
 
         /*public MenuScreen GetMenuScreen(MenuScreen modListMenu, ModToggleDelegates? toggleDelegates)
