@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using HarmonyLib;
+using Silksong.DataManager;
 using Silksong.ModMenu.Plugin;
 using Silksong.ModMenu.Screens;
 using Silksong.ModMenu.Elements;
@@ -15,10 +16,18 @@ namespace HueShifter
 {
     [BepInAutoPlugin(id: "io.github.dpinela.hueshifter", "HueShifter")]
     [BepInDependency("org.silksong-modding.datamanager")]
-    public partial class HueShifterPlugin : BaseUnityPlugin, IModMenuCustomMenu
+    public partial class HueShifterPlugin : BaseUnityPlugin, IModMenuCustomMenu, IGlobalDataMod<HueShifterSettings>
     {
         public static HueShifterPlugin Instance;
-        public HueShifterSettings GS { get; private set; } = new();
+        public HueShifterSettings? GlobalData
+        {
+            get;
+            set
+            {
+                field = value != null ? value : new();
+            }
+        } = new();
+        internal HueShifterSettings GS => GlobalData!;
 
         //private Menu menuRef;
 
@@ -37,9 +46,6 @@ namespace HueShifter
         // Rider did this it's more efficient or something
         private static readonly int PhaseProperty = Shader.PropertyToID("_Phase");
         private static readonly int FrequencyProperty = Shader.PropertyToID("_Frequency");
-
-        public void OnLoadGlobal(HueShifterSettings s) => GS = s;
-        public HueShifterSettings OnSaveGlobal() => GS;
 
         public void LoadAssets()
         {
@@ -137,7 +143,7 @@ namespace HueShifter
             var go = renderer.gameObject;
             return
                 renderer is not SpriteRenderer {color.maxColorComponent: 0} &&
-                go.name != "Item Sprite";
+            go.name != "Item Sprite";
         }
         
         public void SetShader(Renderer renderer, float phase, Vector4 frequencyVector)
@@ -202,26 +208,77 @@ namespace HueShifter
         {
             var pagedMenu = new PaginatedMenuScreen(MenuName);
             var mainPage = new VerticalGroup();
-            {
-                var model = ChoiceModels.ForBool("Off", "On");
-                model.OnValueChanged += (on) =>
-                {
-                    GS.ModEnabled = on;
-                };
-                model.SetValue(GS.ModEnabled);
-                mainPage.Add(new ChoiceElement<bool>("Mod Enabled", model));
-            }
+
+            Action refreshMenu = () => {};
+
+            mainPage.Add(Toggle("Mod Enabled", () => GS.ModEnabled, (v) => GS.ModEnabled = v, ref refreshMenu));
             {
                 var model = ChoiceModels.ForEnum<RandomPhaseSetting>();
                 model.OnValueChanged += (ps) =>
                 {
                     GS.RandomPhase = ps;
                 };
-                model.SetValue(GS.RandomPhase);
+                refreshMenu += () => model.SetValue(GS.RandomPhase);
                 mainPage.Add(new ChoiceElement<RandomPhaseSetting>("Randomize Hues", model));
             }
+            mainPage.Add(Slider("Hue Shift Angle", 0, 360, 37, () => GS.Phase, (v) => GS.Phase = v, ref refreshMenu));
+            mainPage.Add(Toggle("Allow Vanilla Colours", () => GS.AllowVanillaPhase, (v) => GS.AllowVanillaPhase = v, ref refreshMenu));
+            mainPage.Add(Toggle("Shift Scene Lighting", () => GS.ShiftLighting, (v) => GS.ShiftLighting = v, ref refreshMenu));
+            mainPage.Add(Toggle("Respect Lighting", () => GS.RespectLighting, (v) => GS.RespectLighting = v, ref refreshMenu));
+            mainPage.Add(Button("Re-roll Palette", () =>
+            {
+                Palette.Clear();
+                SetAllTheShaders();
+            }));
             pagedMenu.AddPage(mainPage);
+
+            var rainbowPage = new VerticalGroup();
+            rainbowPage.Add(Slider("Rainbow Y", -100, 100, 21, () => GS.YFrequency, (v) => GS.YFrequency = v, ref refreshMenu));
+            rainbowPage.Add(Slider("Rainbow Z", -100, 100, 21, () => GS.ZFrequency, (v) => GS.ZFrequency = v, ref refreshMenu));
+            rainbowPage.Add(Slider("Rainbow X", -100, 100, 21, () => GS.XFrequency, (v) => GS.XFrequency = v, ref refreshMenu));
+            rainbowPage.Add(Slider("Animation Speed", -100, 100, 21, () => GS.TimeFrequency, (v) => GS.TimeFrequency = v, ref refreshMenu));
+            rainbowPage.Add(Button("Apply to Current Room", SetAllTheShaders));
+            rainbowPage.Add(Button("Reset to Defaults", () =>
+            {
+                GlobalData = new();
+                refreshMenu();
+                SetAllTheShaders();
+            }));
+            pagedMenu.AddPage(rainbowPage);
+
+            refreshMenu();
+
             return pagedMenu;
+        }
+
+        private static IChoiceModel<bool> BoolModel(Action<bool> setter, ref Action refresh)
+        {
+            var model = ChoiceModels.ForBool("On", "Off");
+            model.OnValueChanged += setter;
+            return model;
+        }
+
+        private static ChoiceElement<bool> Toggle(string label, Func<bool> getter, Action<bool> setter, ref Action refresh)
+        {
+            var model = ChoiceModels.ForBool("On", "Off");
+            model.OnValueChanged += setter;
+            refresh += () => model.SetValue(getter());
+            return new(label, model);
+        }
+
+        private static SliderElement<float> Slider(string label, float min, float max, int numSteps, Func<float> getter, Action<float> setter, ref Action refresh)
+        {
+            var model = SliderModels.ForFloats(min, max, numSteps);
+            model.OnValueChanged += setter;
+            refresh += () => model.SetValue(getter());
+            return new(label, model);
+        }
+
+        private static TextButton Button(string label, Action effect)
+        {
+            var button = new TextButton(label);
+            button.OnSubmit += effect;
+            return button;
         }
 
         /*public MenuScreen GetMenuScreen(MenuScreen modListMenu, ModToggleDelegates? toggleDelegates)
