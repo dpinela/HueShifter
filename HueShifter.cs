@@ -83,6 +83,11 @@ namespace HueShifter
         {
             private static void Postfix(GameManager __instance)
             {
+                if (!Instance.GS.ModEnabled)
+                {
+                    return;
+                }
+
                 IEnumerator DelayedShaderSet()
                 {
                     yield return null; // wait a frame
@@ -251,16 +256,9 @@ namespace HueShifter
             return pagedMenu;
         }
 
-        private static IChoiceModel<bool> BoolModel(Action<bool> setter, ref Action refresh)
-        {
-            var model = ChoiceModels.ForBool("On", "Off");
-            model.OnValueChanged += setter;
-            return model;
-        }
-
         private static ChoiceElement<bool> Toggle(string label, Func<bool> getter, Action<bool> setter, ref Action refresh)
         {
-            var model = ChoiceModels.ForBool("On", "Off");
+            var model = ChoiceModels.ForBool("Off", "On");
             model.OnValueChanged += setter;
             refresh += () => model.SetValue(getter());
             return new(label, model);
