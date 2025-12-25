@@ -183,8 +183,12 @@ namespace HueShifter
                         "UI/BlendModes/Screen" => RainbowScreenBlend,
                         "Legacy Shaders/Particles/Additive" => RainbowParticleAdd,
                         "Legacy Shaders/Particles/Additive (Soft)" => RainbowParticleAddSoft,
-                        "Hollow Knight/Grass-Default" => RainbowGrassDefault,
-                        "Hollow Knight/Grass-Diffuse" => GS.RespectLighting ? RainbowGrassLit : RainbowGrassDefault,
+                        // The RainbowGrassDefault and RainbowGrassLit shaders are not compatible
+                        // with Silksong, and cause wobbly movements when applied to some background
+                        // objects. The non-grass shaders avoid this, but render these objects
+                        // completely static; using those until we have proper patched grass shaders.
+                        "Hollow Knight/Grass-Default" => RainbowDefault,
+                        "Hollow Knight/Grass-Diffuse" => GS.RespectLighting ? RainbowLit : RainbowDefault,
                         _ => null,
                     };
                     if (newShader is null) continue;
