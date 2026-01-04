@@ -15,15 +15,17 @@ Turning it off will prevent the default lighting from damping down the colours b
 This setting only takes affect on scene reload.
 
 TODOs:
-+ Add grass support (will require replicating the game's grass waving shaders).
-+ Maybe hue shift the scene lighting too.
 + Eventually maybe make CK but for shaders?
 
 ## Screenshot Gallery
 
-![](https://user-images.githubusercontent.com/106181028/173234232-19ce8379-2dea-40cb-86e4-51dceadeab07.png)
-![](https://user-images.githubusercontent.com/106181028/173234464-283515e1-bce1-4570-8c2e-32500b98a06b.png)
-![](https://user-images.githubusercontent.com/106181028/173234238-9f0ceae9-11d3-47a3-86bc-ded545be2cc2.png)
+![Hornet standing in Bone Bottom, which is repainted yellow](Screenshots/yellow%20bonebottom.png)
+![Hornet and Shakra standing in the Deep Docks, which glows green with radiation](Screenshots/radioactive%20docks.png)
+![Hornet standing in The Marrow with rainbow sparks flying around her](Screenshots/rainbow%20sparks.png)
 
-![](https://user-images.githubusercontent.com/106181028/179248796-fe998d10-633a-45f1-9658-b23fb419d8c8.png)
-![](https://user-images.githubusercontent.com/106181028/179248777-5e8b03a4-c593-4d9c-bcf9-88d2f206a530.png)
+# Acknowledgments
+
+Thanks to [BeesNation][] for making the [original HueShifter][orig] for Hollow Knight.
+
+[BeesNation]: https://github.com/beesnation/
+[orig]: https://github.com/beesnation/HueShifter

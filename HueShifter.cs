@@ -16,10 +16,11 @@ namespace HueShifter
 {
     [BepInAutoPlugin(id: "io.github.dpinela.hueshifter", "HueShifter")]
     [BepInDependency("org.silksong-modding.datamanager")]
-    public partial class HueShifterPlugin : BaseUnityPlugin, IModMenuCustomMenu, IGlobalDataMod<HueShifterSettings>
+    [BepInDependency("org.silksong-modding.modmenu")]
+    public partial class HueShifterPlugin : BaseUnityPlugin, IModMenuCustomMenu, IProfileDataMod<HueShifterSettings>
     {
         public static HueShifterPlugin Instance;
-        public HueShifterSettings? GlobalData
+        public HueShifterSettings? ProfileData
         {
             get;
             set
@@ -27,7 +28,7 @@ namespace HueShifter
                 field = value != null ? value : new();
             }
         } = new();
-        internal HueShifterSettings GS => GlobalData!;
+        internal HueShifterSettings GS => ProfileData!;
 
         //private Menu menuRef;
 
@@ -249,7 +250,7 @@ namespace HueShifter
             rainbowPage.Add(Button("Apply to Current Room", SetAllTheShaders));
             rainbowPage.Add(Button("Reset to Defaults", () =>
             {
-                GlobalData = new();
+                ProfileData = new();
                 refreshMenu();
                 SetAllTheShaders();
             }));
