@@ -8,7 +8,7 @@ internal static class HeroLightHandler
 {
     private static void Postfix()
     {
-        if (HueShifterPlugin.Instance.GS.ModEnabled)
+        if (HueShifterPlugin.Instance.GS.ModEnabled && HeroController.instance != null)
         {
             Color.RGBToHSV(HeroController.instance.heroLight.BaseColor, out var h, out var s, out var v);
             HeroController.instance.heroLight.BaseColor = Color.HSVToRGB( Mathf.Repeat(h + HueShifterPlugin.Instance.GetPhase(), 1.0f), s, v);
