@@ -32,9 +32,9 @@ Shader "Custom/RainbowLit"
 		[HideInInspector] _Flip ("Flip", Vector) = (1,1,1,1)
 		[PerRendererData] _AlphaTex ("External Alpha", 2D) = "white" {}
 		[PerRendererData] _EnableExternalAlpha ("Enable External Alpha", Float) = 0
-        
+
 		_Phase ("Phase", Float) = 0
-        _Frequency ("Frequency", Vector) = (0,0,0,0) 
+        _Frequency ("Frequency", Vector) = (0,0,0,0)
     }
     SubShader
     {
@@ -44,44 +44,59 @@ Shader "Custom/RainbowLit"
         Cull Off
 		ZWrite Off
 
-        CGPROGRAM
-        #pragma surface surf Lambert vertex:vert nofog nolightmap nodynlightmap keepalpha noinstancing
-        #pragma target 2.0
-        #pragma multi_compile_local _ PIXELSNAP_ON
-        #pragma multi_compile _ ETC1_EXTERNAL_ALPHA
-        
-        #include "Rainbow.cginc"
-        #include "UnitySprites.cginc"
-
-        struct Input
+        PASS
         {
-            float2 uv_MainTex;
-            fixed4 color;
-        	fixed3 worldPos;
-        };
+            CGPROGRAM
 
-        void vert (inout appdata_full v, out Input o)
-        {
-            v.vertex = UnityFlipSprite(v.vertex, _Flip);
-        	// o.worldPos = mul(unity_ObjectToWorld, v.vertex);
+            #pragma vertex SpriteVert2
+            #pragma fragment RainbowFragLit
+            #pragma target 2.0
+            #pragma multi_compile_instancing
+            #pragma multi_compile_local _ PIXELSNAP_ON
+            #pragma multi_compile _ ETC1_EXTERNAL_ALPHA
 
-            #if defined(PIXELSNAP_ON)
-            v.vertex = UnityPixelSnap (v.vertex);
-            #endif
+            #include "Rainbow.cginc"
+            #include "UnitySprites.cginc"
 
-            UNITY_INITIALIZE_OUTPUT(Input, o);
-            o.color = v.color * _Color * _RendererColor;
+            struct fragData
+            {
+                float4 vertex   : SV_POSITION;
+                fixed4 color    : COLOR;
+                float2 texcoord : TEXCOORD0;
+                float3 worldPos : TEXCOORD1;
+                UNITY_VERTEX_OUTPUT_STEREO
+            };
+
+
+            fragData SpriteVert2(appdata_t IN)
+            {
+                fragData OUT;
+
+                UNITY_SETUP_INSTANCE_ID (IN);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(OUT);
+
+                OUT.vertex = UnityFlipSprite(IN.vertex, _Flip);
+                OUT.vertex = UnityObjectToClipPos(OUT.vertex);
+                OUT.texcoord = IN.texcoord;
+                OUT.worldPos = mul(unity_ObjectToWorld, IN.vertex);
+                OUT.color = IN.color * _Color * _RendererColor;
+
+                #ifdef PIXELSNAP_ON
+                OUT.vertex = UnityPixelSnap (OUT.vertex);
+                #endif
+
+                return OUT;
+            }
+
+            fixed4 RainbowFragLit(fragData IN) : SV_Target
+            {
+                fixed4 c = SampleSpriteTexture (IN.texcoord) * IN.color;
+                c.rgb *= UNITY_LIGHTMODEL_AMBIENT;
+                // c.rgb *= c.a;
+                c.rgb = hueshift(IN.worldPos, c.rgb);
+                return c;
+            }
+            ENDCG
         }
-
-        void surf (Input IN, inout SurfaceOutput o)
-        {
-            fixed4 c = SampleSpriteTexture (IN.uv_MainTex) * IN.color;
-			// Unity's built in shader seems to multiply rgb by alpha here.
-			// HK's shaders don't I think?
-            o.Albedo = hueshift(IN.worldPos, c.rgb);
-            o.Alpha = c.a;
-        }
-
-        ENDCG
     }
 }

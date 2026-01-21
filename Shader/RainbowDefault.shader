@@ -43,7 +43,8 @@ Shader "Custom/RainbowDefault"
 		Lighting Off
         Cull Off
 		ZWrite Off
-        Pass
+
+        PASS
         {
             CGPROGRAM
 

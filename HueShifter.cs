@@ -42,9 +42,8 @@ namespace HueShifter
 
         public readonly Dictionary<string, float> Palette = new();
         internal readonly MaterialPropertyBlock materialPropertyBlock = new();
-        private readonly Dictionary<Material, Material> materialSwaps = new ();
+        private readonly Dictionary<Material, Material> materialSwaps = new();
 
-        // Rider did this it's more efficient or something
         private static readonly int PhaseProperty = Shader.PropertyToID("_Phase");
         private static readonly int FrequencyProperty = Shader.PropertyToID("_Frequency");
 
@@ -182,14 +181,11 @@ namespace HueShifter
                         "Sprites/Default" => RainbowDefault,
                         "Sprites/Cherry-Default" => RainbowDefault,
                         "UI/BlendModes/Screen" => RainbowScreenBlend,
+                        "Sprites/Screen" => RainbowScreenBlend,
                         "Legacy Shaders/Particles/Additive" => RainbowParticleAdd,
                         "Legacy Shaders/Particles/Additive (Soft)" => RainbowParticleAddSoft,
-                        // The RainbowGrassDefault and RainbowGrassLit shaders are not compatible
-                        // with Silksong, and cause wobbly movements when applied to some background
-                        // objects. The non-grass shaders avoid this, but render these objects
-                        // completely static; using those until we have proper patched grass shaders.
-                        "Hollow Knight/Grass-Default" => RainbowDefault,
-                        "Hollow Knight/Grass-Diffuse" => GS.RespectLighting ? RainbowLit : RainbowDefault,
+                        "Hollow Knight/Grass-Default" => RainbowGrassDefault,
+                        "Hollow Knight/Grass-Diffuse" => GS.RespectLighting ? RainbowGrassLit : RainbowGrassDefault,
                         _ => null,
                     };
                     if (newShader is null) continue;

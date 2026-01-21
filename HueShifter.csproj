@@ -31,11 +31,9 @@
     <PackageReference Include="Hamunii.BepInEx.AutoPlugin" Version="2.0.1" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Unity.Analyzers" Version="1.25.0" PrivateAssets="all" />
     <PackageReference Include="Silksong.ModMenu" Version="0.1.0" />
+    <PackageReference Include="Silksong.DataManager" Version="1.1.0" />
     <PackageReference Include="UnityEngine.Modules" Version="6000.0.50" IncludeAssets="compile" />
     <PackageReference Include="Silksong.GameLibs" Version="*-*" PrivateAssets="all" />
-    <Reference Include="Silksong.DataManager">
-      <HintPath>../Silksong.DataManager/bin/Debug/netstandard2.1/Silksong.DataManager.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources/**/*" />
