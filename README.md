@@ -10,13 +10,6 @@ If you want it to make everything majestic rainbows, use the X and Y and Z setti
 in each of the three axes. The Z rainbow setting in particular colors objects based on how deep they are into the background.
 The effect can also be animated using the "Animate Speed" slider.
 
-The "Respect Lighting" setting controls whether sprites that are normally tinted by the ambient light in vanilla still are.
-Turning it off will prevent the default lighting from damping down the colours but it will break PaletteSwapper.
-This setting only takes affect on scene reload.
-
-TODOs:
-+ Eventually maybe make CK but for shaders?
-
 ## Screenshot Gallery
 
 ![Hornet standing in Bone Bottom, which is repainted yellow](Screenshots/yellow%20bonebottom.png)

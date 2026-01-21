@@ -229,7 +229,6 @@ namespace HueShifter
             }
             mainPage.Add(Slider("Hue Shift Angle", 0, 360, 37, () => GS.Phase, (v) => GS.Phase = v, ref refreshMenu));
             mainPage.Add(Toggle("Allow Vanilla Colours", () => GS.AllowVanillaPhase, (v) => GS.AllowVanillaPhase = v, ref refreshMenu));
-            mainPage.Add(Toggle("Shift Scene Lighting", () => GS.ShiftLighting, (v) => GS.ShiftLighting = v, ref refreshMenu));
             mainPage.Add(Toggle("Respect Lighting", () => GS.RespectLighting, (v) => GS.RespectLighting = v, ref refreshMenu));
             mainPage.Add(Button("Re-roll Palette", () =>
             {
