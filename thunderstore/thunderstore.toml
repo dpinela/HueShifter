@@ -3,7 +3,7 @@ schemaVersion = "0.0.1"
 
 [package]
 # The name of the team you are publishing as
-namespace = "dpinela"
+namespace = "pimpaspimpinela"
 # max 250 characters
 description = "Changes the map's colours using shaders. Can also make everything rainbows!"
 
